@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <link rel="stylesheet" href='/static/styles/main.css'>
+    <script type='module' src='/static/scripts/main.js'></script>
+  </head>
+  <body>
+    {% csrf_token %}
+    <div id='container'>
+      <div id='cmdcontainer'>
+        {% for cmd in cmdhistory %}
+        <p>{{cmd}}</p>
+        {% endfor %}
+      </div>
+      <div id='inputcontainer'>
+          <span class='redspan'>$</span><span id='inputtitle' class='whitespan'>INPUT:</span><input id='userinput'>
+      </div>
+    </div>
+  </body>
+</html>

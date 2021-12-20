@@ -1,0 +1,40 @@
+body, input {
+  background-color: black;
+  font-kerning: none;
+  color: chartreuse;
+  font-family: monospace;
+  font-size: 15px;
+}
+
+input {
+  border: none;
+  width: 80%;
+}
+
+input:focus {
+  outline: none;
+}
+
+.whitespan {
+  color: white;
+}
+
+.redspan {
+  color: red;
+}
+
+#container {
+  width: 60%;
+  height: 95%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#cmdcontainer {
+  max-height: 95%;
+  overflow-y: scroll;
+  word-break: break-all;
+}
+
+#inputcontainer {
+}
