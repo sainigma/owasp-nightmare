@@ -22,7 +22,15 @@ Easy way to test that this injection works, is to send command `send target <img
 
 Since the project allows Cross-Origin Resource Sharing, even complex scripts outside the server can be embedded inside.
 
-The injection can be fixed by validating and sanitizing the user inputs on user creation and message sending. HTML-tags should either be removed, or allowed only in special cases (<b></b> comes to mind). The CORS problem can be fixed by configuring CORS headers to the app, with django-cors-headers. Another way is to setup the app as a HTTPS site, which should create errors in browser, if cross-origin resources are ever fetched.
+The injection can be fixed by validating and sanitizing the user inputs on user creation and message sending. HTML-tags should either be removed, or allowed only in special cases (<b></b> comes to mind).
+
+The exact entry points which should have validation, are:
+
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L38
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L63
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L81
+
+The CORS problem can be fixed by configuring CORS headers to the app, with django-cors-headers. Another way is to setup the app as a HTTPS site, which should create errors in browser, if cross-origin resources are ever fetched.
 
 ### Identification and authentication failures
 
@@ -32,21 +40,66 @@ Also, the app does not provide a new token on valid authentication. It just mark
 
 To fix the first problem, the app should check the strength of a new password, based on length and characters used. This could be done using a regex pattern. The password should also be checked against a list of well known worst passwords.
 
+The exact line which should check for password strength is:
+
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L64
+
 Addittionally, the app should also start rate limiting connections that seem suspicious. A criteria for this could be n failed login attempts from the same source, based on IP and the target username.
 
 To fix the second problem, logging out should clear the session on both ends, and tokens should not be reused. This could be done by granting the user a new token on successful login. This means that once the token expires, either by time or log out, it will never be valid again, preventing reuse.
 
+The exact fixes are:
+This should return a new token
+
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L51
+
+This should expect a new token
+
+https://github.com/sainigma/owasp-nightmare/blob/main/static/scripts/main.js#L61
+
+This should clear the previous token
+
+https://github.com/sainigma/owasp-nightmare/blob/main/static/scripts/main.js#L88
+
+These action should be rate limited:
+
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L36
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L79
+
 ### Broken access control
 
-When the app lists all messages, it returns a list containing the senders username. While usernames are often public in online services, it increases the possible attack surface. Using separate shown names and usernames for users is an easy fix for this problem.
+When the app lists all messages, it returns a list containing the senders username. While usernames are often public in online services, it increases the possible attack surface. Using separate nicknames and usernames for users is an easy fix for this problem.
+
+It's hard to pinpoint the exact lines where this fix should be applied to, since it requires that the way users can reference to each other to be changed when sending messages. Maybe by id, since nicknames can't be assumed to be unique?
 
 If a csrftoken is stolen, the app blindly trust that the other user is the same. This could be mitigated by checking for simultaneous logins, or by requiring separate login for each unique IP.
+
+The fix should be applied to points where request.session['user'] is referenced, maybe by replacing the lines `if 'user' in request.session` with a method that returns the truth value for the following:
+`if 'user' in request.session and 'ip' in request.session and request.session['ip'] == request.META.get('REMOTE_ADDR')`
+
+Successful login should set the request.session['ip'] parameter:
+
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L49
 
 ### Security logging and monitoring failures
 
 The app doesn't produce any meaningful logs, for example when logins fail or an invalid route is accessed. This means, that any suscpicious activity (=penetration testing) will go unnoticed.
 
 To fix this problem, some sort of logging middleware should be implemented. At the very least, this middleware should be used to generate logs in routes that validate data: login, user creation and message sending.
+
+The exact lines which should feature logging are:
+
+Invalid routes:
+
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L23
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L52
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L77
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L88
+
+Failed actions:
+
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L42
+https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L25
 
 ### Software and data integrity failures
 
@@ -58,6 +111,6 @@ One fix is to manually verify that the dependencies are not compromised. Another
 
 The app doesn't feature any tests, which means that there might be any number of overlooked security flaws.
 
-This can be fixed by writing unit tests, that test the app's individual components, and integration tests that test the system as a whole.
+This can be fixed by writing unit tests, that test the app's individual components, and integration tests that test the system as a whole. A good framework for testing python is pytest.
 
- The tests should have both use and misuse cases, and the project would benefit, if the misuse cases featured fuzzing and mutated inputs.
+The tests should have both use and misuse cases, and the project would benefit, if the misuse cases featured fuzzing and mutated inputs.
