@@ -27,7 +27,9 @@ The injection can be fixed by validating and sanitizing the user inputs on user 
 The exact entry points which should have validation, are:
 
 https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L38
+
 https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L63
+
 https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L81
 
 The CORS problem can be fixed by configuring CORS headers to the app, with django-cors-headers. Another way is to setup the app as a HTTPS site, which should create errors in browser, if cross-origin resources are ever fetched.
@@ -64,6 +66,7 @@ https://github.com/sainigma/owasp-nightmare/blob/main/static/scripts/main.js#L88
 These action should be rate limited:
 
 https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L36
+
 https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L79
 
 ### Broken access control
@@ -92,13 +95,17 @@ The exact lines which should feature logging are:
 Invalid routes:
 
 https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L23
+
 https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L52
+
 https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L77
+
 https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L88
 
 Failed actions:
 
 https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L42
+
 https://github.com/sainigma/owasp-nightmare/blob/main/app/views.py#L25
 
 ### Software and data integrity failures
